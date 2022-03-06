@@ -1,5 +1,6 @@
 #include <iostream>
 #include <vector>
+#include <string>
 #include <cstdlib> // rand
 #include <ctime> // time
 #include <windows.h>
@@ -26,23 +27,22 @@ private:
 	int snakeShape[4];
 	vector<vector<int>> position;
 	int headIndex;
-	char head[4]; // ▶, ▼, ◀ , ▲
+	string head[4]; // ▶, ▼, ◀ , ▲
 	// →, ↓, ←, ↑  77 80 75 72
 public:
-	Snake() : headIndex(0) // head{ '▶', '▼', '◀' , '▲' }, 
+	Snake() : headIndex(0), head{ "▶", "▼", "◀" , "▲"}
 	{
 		position.push_back({1, 3}); // 1
 		position.push_back({1, 2}); // 2 
 		position.push_back({1, 1}); // 3
 	}
-	
 	int getSnakeShape(int headIndex) {
 		return snakeShape[headIndex];
 	}
 	int getHeadIndex() {
 		return headIndex;
 	}
-	char getHead(int headIndex) {
+	string getHead(int headIndex) {
 		return head[headIndex];
 	}
 	vector<vector<int>> getSnakePosition() {
@@ -134,6 +134,14 @@ public:
 		}
 	};
 	
+	Snake* GetSnakeObject() {
+		return snakeObject;
+	}
+
+	vector<vector<int>> GetTable() {
+		return table;
+	}
+
 	void DrawGameTable() {
 		for (int i = 0; i < MAIN_X; ++i) {
 			for (int j = 0; j < MAIN_Y; ++j) {
@@ -146,7 +154,7 @@ public:
 			cout << "\n";
 		}
 	}
-	void createStar() {
+	void CreateStar() {
 		srand((unsigned int)time(NULL));
 		int starX = NULL; int starY = NULL;
 		while (table[starX][starY] != 0) {
@@ -156,44 +164,82 @@ public:
 		table[starX][starY] = 3;
 	}
 
-	void createSnake() {
+	void CreateSnake() {
 		vector<vector<int>> temp = snakeObject->getSnakePosition();
 		table[temp[0][0]][temp[0][1]] = 2;
 		for (int i = 1; i < temp.size(); ++i)
 			table[temp[i][0]][temp[i][1]] = 3;
-		
-		for (int i = 0; i < MAIN_X; ++i) {
-			for (int j = 0; j < MAIN_Y; ++j) {
-				if (table[j][i] == 1) cout << "▦";
-				else if (table[j][i] == 2) cout << snakeObject->getHead(snakeObject->getHeadIndex());
-				else if (table[j][i] == 3) cout << "■";
-				else if (table[j][i] == 4) cout << "★";
-				else cout << "  ";
-			}
-		}
 	}
 
-	void moveSnake(int key) { // position의 end 값을 begin에 insert해줌. 단, direction에 따라서 값이 변경되어 들어감.
+	void MoveSnake(int key) { // position의 end 값을 begin에 insert해줌. 단, direction에 따라서 값이 변경되어 들어감.
 		if (key == RIGHT) snakeObject->goRight();
 		else if (key == DOWN) snakeObject->goDown();
 		else if (key == LEFT) snakeObject->goLeft();
 		else if (key == UP) snakeObject->goUp();
-
-		for (int i = 0; i < MAIN_X; ++i) {
-			for (int j = 0; j < MAIN_Y; ++j) {
-				if (table[j][i] == 1) cout << "▦";
-				else if (table[j][i] == 2) cout << snakeObject->getHead(snakeObject->getHeadIndex());
-				else if (table[j][i] == 3) cout << "■";
-				else if (table[j][i] == 4) cout << "★";
-				else cout << "  ";
-			}
-		}
 	}
 
 	void GetStar() {
+		snakeObject->addTail();
+		for (int i = 1; i < MAIN_X - 1; ++i) {
+			for (int j = 1; j < MAIN_Y - 1; ++j) {
+				if (table[j][i] == 4) table[j][i] = 0;
+			}
+		}
+		CreateStar();
+	}
 
+	void TouchStar() {
+		vector<vector<int>> temp = snakeObject->getSnakePosition();
+		if (table[temp[0][0]][temp[0][1]] == 4) {
+			GetStar();
+		}
 	}
 };
+
+class GamePlay {
+private:
+	GameTable* gt;
+public:
+	GamePlay() {
+		gt = new GameTable();
+		gt->CreateSnake();
+		gt->DrawGameTable();
+		while (true) {
+			int nSelect;
+			if (_kbhit()) {
+				nSelect = _getch();
+				if (nSelect == 224) {
+					nSelect = _getch();
+					switch (nSelect) {
+					case UP:
+						gt->MoveSnake(UP);
+						break;
+					case DOWN:
+						gt->MoveSnake(DOWN);
+						break;
+					case LEFT:
+						gt->MoveSnake(LEFT);
+						break;
+					case RIGHT:
+						gt->MoveSnake(RIGHT);
+						break;
+					default:
+						break;
+					}
+				}
+			}
+			gt->TouchStar();
+			gotoxy(0, 0); //system("cls") 대신
+			gt->DrawGameTable(); // 다시 그리기
+		}
+	}
+	~GamePlay() {
+		delete gt;
+	}
+};
+
+
+
 
 
 int main() {
@@ -206,3 +252,6 @@ int main() {
 	cout << v[1][0] << "\t" << v[1][1] << endl;
 	cout << v[2][0] << "\t" << v[2][1] << endl;
 }
+
+// char -> string으로 바꿈
+// TouchStar + GamePlay 개발
