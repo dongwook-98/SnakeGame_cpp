@@ -52,29 +52,33 @@ public:
 		this->headIndex = headIndex;
 	}
 	void addTail() {
-		switch (headIndex)
-		{
+		switch (headIndex){
 		case 0: //RIGHT
 		{
 			int len = position.size();
-			int temp[2] = {position[len][0], position[len][1] - 1};
+			vector<int> temp = {position[len][0], position[len][1] - 1};
 			position.push_back(temp);
 			break;
 		}
 		case 1: //DOWN
 		{
-			position.push_back({ . });
+			int len = position.size();
+			vector<int> temp = {position[len][0] - 1, position[len][1]};
+			position.push_back(temp);
 			break;
 		}
 		case 2: //LEFT
 		{
-			position.push_back({ . });
+			int len = position.size();
+			vector<int> temp = { position[len][0], position[len][1] + 1};
+			position.push_back(temp);
 			break;
 		}
 		case 3: //UP
 		{
-			position.push_back({ . });
-			break;
+			int len = position.size();
+			vector<int> temp = { position[len][0] + 1, position[len][1] };
+			position.push_back(temp);
 		}
 		}
 	}
